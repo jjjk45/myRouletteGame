@@ -3,15 +3,13 @@ from functools import partial
 import random
 from enum import IntEnum
 
-# myRouletteGame by jjjk45 01.27.2025.10.45
+# myRouletteGame by jjjk45 01.30.2025.23.48
 # TODO:  put labels in the 1to18 row so that buttons can be perfectly aligned,
-#       add bounds to chips variable,
 #       create a loop that uses a dictionary to generate buttons at runtime instead of having them all written out individually,
 #       add more types of bets (2 & 3 number bets),
 
 # create window
 root = tk.Tk()
-root.title = "Roulette"
 root.geometry("485x250")
 
 # bet, chips, & spinresult variables
@@ -19,6 +17,37 @@ bet = tk.IntVar(value=0)
 chips = tk.IntVar(value=1000)
 spinResult = tk.IntVar(value=None)
 payoutResult = tk.IntVar(value=0)
+
+
+# pop up for when you run out of chips
+def outOfChipsAlert():
+    popUp = tk.Toplevel()
+    popUp.grab_set()
+    popUp.configure(bg="black")
+    popUp.title = "Pop Up"
+    popUpText = tk.Label(
+        popUp,
+        text="You Are Out of Chips!!!",
+        font=("Times New Roman", 16),
+        fg="white",
+        bg="black",
+    )
+    popUpText.grid(row=0, column=0, padx=40, pady=5)
+    popUpButton = tk.Button(
+        popUp,
+        text="Reset Chips?",
+        bg="red",
+        command=lambda: [popUpButtonHelper(), popUp.destroy()],
+    )
+    popUpButton.grid(row=1, column=0, padx=40, pady=5)
+    return
+
+
+# couldn't consolidate into one function because popUp is a local variable
+def popUpButtonHelper():
+    chips.set(1000)
+    chipsDisplay.set("Chips: $1000")
+    return
 
 
 # function that controls last roll result counter in bottom right
@@ -82,6 +111,8 @@ def payout(
         changePayoutResult(bet.get() * odds + bet.get())
     else:
         chips.set(chips.get() - bet.get())
+        if chips.get() <= 0:
+            outOfChipsAlert()
         changePayoutResult(bet.get() * -1)
     chipsDisplay.set("Chips: $" + str(chips.get()))
     spinDisplay.set("Roll: " + str(spinResult.get()))
@@ -558,26 +589,25 @@ spaceLabel1.grid(row=0, column=0, padx=2, pady=5)
 # space between bet buttons and counters
 spaceLabel2 = tk.Label(f5, textvariable="", bg="sea green")
 spaceLabel2.grid(row=0, column=6, padx=9, pady=5)
-# labels at the bottom
-# label for current bet
+# "dynamic" labels at the bottom
 betDisplay = tk.StringVar(value="Bet: $" + str(bet.get()))
 betLabel = tk.Label(
     f5, textvariable=betDisplay, font=("Times New Roman", 12), bg="white", width=9
 )
 betLabel.grid(row=0, column=7, pady=5)
-# label for current chips
+
 chipsDisplay = tk.StringVar(value="Chips: $" + str(chips.get()))
 chipsLabel = tk.Label(
     f5, textvariable=chipsDisplay, font=("Times New Roman", 12), bg="gray90", width=10
 )
 chipsLabel.grid(row=0, column=8, padx=5, pady=5)
-# label for the number found in the previous spin
+
 spinDisplay = tk.StringVar(value="Roll: " + str(spinResult.get()))
 lastSpinLabel = tk.Label(
     f4, textvariable=spinDisplay, font=("Times New Roman", 12), bg="ivory", width=9
 )
 lastSpinLabel.grid(row=0, column=1, padx=5, pady=5, sticky="sew")
-# label for the chip amount result of the previous spin
+
 payoutResultDisplay = tk.StringVar(value=str(payoutResult.get()))
 payoutResultLabel = tk.Label(
     f4,
